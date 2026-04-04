@@ -1,10 +1,10 @@
-# 🔮 PRISM — Agentic Data Intelligence
+# PRISM — Agentic Data Intelligence
 
 > **Upload a CSV. Four specialized AI agents analyse it end-to-end — profiling, cleaning, statistics, visualisation, and natural-language chat — without a single line of user code.**
 
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://python.org)
 [![LangGraph](https://img.shields.io/badge/LangGraph-1.1-FF6B35?logo=langchain&logoColor=white)](https://langchain-ai.github.io/langgraph/)
-[![Gemini](https://img.shields.io/badge/Gemini-Flash-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
+[![Gemini](https://img.shields.io/badge/Gemini-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.135-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.56-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io)
 
