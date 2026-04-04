@@ -1,0 +1,91 @@
+# ── Secrets & environment ─────────────────────────────────────────────────────
+.env
+backend/.env
+frontend/.streamlit/secrets.toml
+*.env.local
+
+# ── Project brief (not for public repos) ─────────────────────────────────────
+../prism agent project outline.md
+*project outline*
+*project instructions*
+
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+wheels/
+MANIFEST
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+.Python
+
+# ── uv ───────────────────────────────────────────────────────────────────────
+# uv.lock is intentionally committed — ensures reproducible installs on Railway/Streamlit
+# .python-version is intentionally committed — pins runtime for deployment
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+coverage.xml
+*.log
+
+# ── Type checking ─────────────────────────────────────────────────────────────
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+
+# ── Jupyter ───────────────────────────────────────────────────────────────────
+.ipynb_checkpoints
+*.ipynb
+
+# ── Temporary & export files ──────────────────────────────────────────────────
+*.tmp
+*.bak
+*.swp
+*_clean.csv
+prism_exports/
+exports/
+/tmp/
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ── IDE & editors ─────────────────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.iml
+
+# ── LangSmith / LangChain local cache ────────────────────────────────────────
+.langchain/
+langchain.db
+
+# ── Streamlit ────────────────────────────────────────────────────────────────
+.streamlit/secrets.toml
