@@ -1,11 +1,11 @@
 fastapi==0.115.0
 uvicorn==0.30.0
 python-multipart==0.0.9
-langgraph==0.2.50
-langchain==0.3.0
-langchain-core==0.3.0
-langchain-google-genai==2.0.0
-langsmith==0.1.100
+python-dotenv==1.0.0
+langgraph>=0.2.50
+langchain>=0.3.0
+langchain-google-genai>=2.0.0
+langsmith>=0.1.100
 pandas==2.2.0
 numpy==1.26.0
 scipy==1.13.0
