@@ -313,16 +313,17 @@ if uploaded and "session_id" not in st.session_state:
         if res.status_code == 200:
             data = res.json()
             st.session_state.update({
-                "session_id":  data["session_id"],
-                "profile":     data.get("profile", {}),
-                "cleaning":    data.get("cleaning", {}),
-                "charts":      data.get("charts", []),
-                "stats":       data.get("stat_results", []),
-                "time_series": data.get("time_series", []),
-                "narrative":   data.get("narrative", ""),
-                "errors":      data.get("errors", []),
-                "messages":    [],
-                "df_preview":  pd.read_csv(uploaded),
+                "session_id":     data["session_id"],
+                "profile":        data.get("profile", {}),
+                "cleaning":       data.get("cleaning", {}),
+                "charts":         data.get("charts", []),
+                "stats":          data.get("stat_results", []),
+                "time_series":    data.get("time_series", []),
+                "narrative":      data.get("narrative", ""),
+                "quality_score":  data.get("quality_score", {}),
+                "errors":         data.get("errors", []),
+                "messages":       [],
+                "df_preview":     pd.read_csv(uploaded),
             })
             status.update(label="✅ Analysis complete", state="complete", expanded=False)
         else:
@@ -348,11 +349,12 @@ if "session_id" not in st.session_state:
     st.stop()
 
 # ── Session data ──────────────────────────────────────────────────────────────
-profile  = st.session_state["profile"]
-cleaning = st.session_state["cleaning"]
-charts   = st.session_state["charts"]
-stats    = st.session_state["stats"]
-shape    = profile.get("shape", [0, 0])
+profile       = st.session_state["profile"]
+cleaning      = st.session_state["cleaning"]
+charts        = st.session_state["charts"]
+stats         = st.session_state["stats"]
+quality_score = st.session_state.get("quality_score", {})
+shape         = profile.get("shape", [0, 0])
 
 tabs = st.tabs(["  Overview  ", "  Data Quality  ", "  Distributions  ",
                 "  Correlations  ", "  Statistics  ", "  Chat & Export  "])
@@ -388,6 +390,45 @@ with tabs[0]:
 
 # ── TAB 2: Data Quality ───────────────────────────────────────────────────────
 with tabs[1]:
+    # ── Quality Score panel ───────────────────────────────────────────────────
+    if quality_score:
+        qs_overall = quality_score.get("overall", 0)
+        qs_grade   = quality_score.get("grade", "?")
+        qs_verdict = quality_score.get("verdict", "")
+        grade_color = {"A": "#4ade80", "B": "#a3e635", "C": "#facc15", "D": "#f87171"}.get(qs_grade, "#94a3b8")
+
+        section("🏅", "Data Quality Score")
+        st.markdown(f"""
+        <div class="stat-card" style="display:flex;align-items:center;gap:28px;padding:22px 28px;margin-bottom:12px">
+          <div style="text-align:center;min-width:90px">
+            <div style="font-size:3rem;font-weight:800;color:{grade_color};line-height:1">{qs_overall}</div>
+            <div style="font-size:0.7rem;color:#64748b;margin-top:2px">/ 100</div>
+          </div>
+          <div style="border-left:1px solid #1e293b;padding-left:24px;flex:1">
+            <div style="font-size:2rem;font-weight:700;color:{grade_color};line-height:1">Grade {qs_grade}</div>
+            <div style="color:#94a3b8;font-size:0.85rem;margin-top:6px">{qs_verdict}</div>
+          </div>
+        </div>""", unsafe_allow_html=True)
+
+        d1, d2, d3, d4 = st.columns(4)
+        for col, label, key in [
+            (d1, "Completeness", "completeness"),
+            (d2, "Uniqueness",   "uniqueness"),
+            (d3, "Validity",     "validity"),
+            (d4, "Consistency",  "consistency"),
+        ]:
+            val = quality_score.get(key, 0)
+            bar_color = "#4ade80" if val >= 90 else "#facc15" if val >= 70 else "#f87171"
+            col.markdown(f"""
+            <div class="stat-card" style="padding:14px 16px">
+              <div class="stat-label">{label}</div>
+              <div class="stat-value" style="font-size:1.5rem;color:{bar_color}">{val}</div>
+              <div style="background:#1e293b;border-radius:4px;height:6px;margin-top:8px">
+                <div style="background:{bar_color};width:{val}%;height:6px;border-radius:4px"></div>
+              </div>
+            </div>""", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+
     section("🔍", "Data Health")
 
     null_pcts    = profile.get("null_pcts", {})
