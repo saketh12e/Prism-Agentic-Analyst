@@ -40,6 +40,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from graph.graph import graph
+from tools.quality_tools import compute_quality_score
 
 # ── App ───────────────────────────────────────────────────────────────────────
 
@@ -131,6 +132,8 @@ async def upload_csv(file: UploadFile = File(...)):
     pr = result.get("profile_report")
     SESSIONS[session_id] = pr.clean_csv_path if pr else tmp.name
 
+    quality_score = compute_quality_score(pr) if pr else {}
+
     return {
         "session_id": session_id,
         "profile": _safe_asdict(pr),
@@ -139,6 +142,7 @@ async def upload_csv(file: UploadFile = File(...)):
         "time_series": [_safe_asdict(t) for t in result.get("time_series_results", [])],
         "charts": [_safe_asdict(c) for c in result.get("chart_specs", [])],
         "narrative": result.get("narrative_summary", ""),
+        "quality_score": quality_score,
         "errors": result.get("errors", []),
     }
 
