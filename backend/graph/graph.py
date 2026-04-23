@@ -8,7 +8,7 @@ from __future__ import annotations
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, StateGraph
 
-from graph.agents import chart_agent, chat_agent, profile_agent, stat_agent, supervisor
+from graph.agents import chart_agent, chat_agent, insight_agent, profile_agent, stat_agent, supervisor
 from graph.state import AgentState
 
 
@@ -34,6 +34,7 @@ def build_graph():
     builder.add_node("profile_agent", profile_agent.profile_agent_node)
     builder.add_node("stat_agent",    stat_agent.stat_agent_node)
     builder.add_node("chart_agent",   chart_agent.chart_agent_node)
+    builder.add_node("insight_agent", insight_agent.insight_agent_node)
     builder.add_node("chat_agent",    chat_agent.chat_agent_node)
 
     # ── Entry point ───────────────────────────────────────────────────────────
@@ -47,13 +48,14 @@ def build_graph():
             "profile_agent": "profile_agent",
             "stat_agent":    "stat_agent",
             "chart_agent":   "chart_agent",
+            "insight_agent": "insight_agent",
             "chat_agent":    "chat_agent",
             "end":           END,
         },
     )
 
     # ── Every sub-agent loops back to supervisor ──────────────────────────────
-    for agent_name in ["profile_agent", "stat_agent", "chart_agent", "chat_agent"]:
+    for agent_name in ["profile_agent", "stat_agent", "chart_agent", "insight_agent", "chat_agent"]:
         builder.add_edge(agent_name, "supervisor")
 
     # ── Compile with in-memory checkpointer (enables thread_id persistence) ──

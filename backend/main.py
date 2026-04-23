@@ -73,8 +73,9 @@ def _safe_asdict(obj) -> dict:
         return {}
 
 
-def _make_initial_state(csv_path: str) -> dict:
+def _make_initial_state(csv_path: str, session_id: str) -> dict:
     return {
+        "session_id": session_id,
         "dataframe_path": csv_path,
         "user_query": (
             "Perform a complete exploratory data analysis. "
@@ -87,6 +88,7 @@ def _make_initial_state(csv_path: str) -> dict:
         "stat_results": [],
         "time_series_results": [],
         "chart_specs": [],
+        "insights": [],
         "narrative_summary": None,
         "chat_history": [],
         "export_paths": [],
@@ -124,7 +126,7 @@ async def upload_csv(file: UploadFile = File(...)):
     config = {"configurable": {"thread_id": session_id}}
 
     try:
-        result = graph.invoke(_make_initial_state(tmp.name), config=config)
+        result = graph.invoke(_make_initial_state(tmp.name, session_id), config=config)
     except Exception as exc:
         os.unlink(tmp.name)
         raise HTTPException(status_code=500, detail=f"Pipeline error: {exc}") from exc
@@ -141,6 +143,7 @@ async def upload_csv(file: UploadFile = File(...)):
         "stat_results": [_safe_asdict(s) for s in result.get("stat_results", [])],
         "time_series": [_safe_asdict(t) for t in result.get("time_series_results", [])],
         "charts": [_safe_asdict(c) for c in result.get("chart_specs", [])],
+        "insights": [_safe_asdict(i) for i in result.get("insights", [])],
         "narrative": result.get("narrative_summary", ""),
         "quality_score": quality_score,
         "errors": result.get("errors", []),

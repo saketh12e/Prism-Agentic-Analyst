@@ -259,11 +259,12 @@ hr { border-color: #1e293b !important; }
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-def render_chart(spec: dict):
+def render_chart(spec: dict, key: str = ""):
     try:
         pj = spec.get("plotly_json", "{}")
         fig = pio.from_json(pj if isinstance(pj, str) else json.dumps(pj))
-        st.plotly_chart(fig, use_container_width=True, key=f"chart_{i}_{spec['chart_type']}", config={"displayModeBar": False})
+        chart_key = key or f"chart_{id(spec)}_{spec.get('chart_type', 'unknown')}"
+        st.plotly_chart(fig, use_container_width=True, key=chart_key, config={"displayModeBar": False})
         if spec.get("description"):
             st.caption(f"↑ {spec['description']}")
     except Exception as exc:
@@ -304,6 +305,7 @@ if uploaded and "session_id" not in st.session_state:
         st.write("📋 **Profile Agent** — inspecting columns, cleaning data…")
         st.write("📊 **Stat Agent** — running correlation, t-tests, ANOVA…")
         st.write("🎨 **Chart Agent** — generating visualisations…")
+        st.write("💡 **Insight Agent** — generating & testing data hypotheses…")
 
         res = requests.post(
             f"{BACKEND}/upload",
@@ -321,6 +323,7 @@ if uploaded and "session_id" not in st.session_state:
                 "time_series":    data.get("time_series", []),
                 "narrative":      data.get("narrative", ""),
                 "quality_score":  data.get("quality_score", {}),
+                "insights":       data.get("insights", []),
                 "errors":         data.get("errors", []),
                 "messages":       [],
                 "df_preview":     pd.read_csv(uploaded),
@@ -354,10 +357,11 @@ cleaning      = st.session_state["cleaning"]
 charts        = st.session_state["charts"]
 stats         = st.session_state["stats"]
 quality_score = st.session_state.get("quality_score", {})
+insights      = st.session_state.get("insights", [])
 shape         = profile.get("shape", [0, 0])
 
 tabs = st.tabs(["  Overview  ", "  Data Quality  ", "  Distributions  ",
-                "  Correlations  ", "  Statistics  ", "  Chat & Export  "])
+                "  Correlations  ", "  Statistics  ", "  Insights  ", "  Chat & Export  "])
 
 # ── TAB 1: Overview ───────────────────────────────────────────────────────────
 with tabs[0]:
@@ -598,8 +602,72 @@ with tabs[4]:
     else:
         st.info("No statistical results available yet.")
 
-# ── TAB 6: Chat & Export ──────────────────────────────────────────────────────
+# ── TAB 6: Insights ──────────────────────────────────────────────────────────
 with tabs[5]:
+    section("💡", "Autonomous Data Insights")
+
+    if not insights:
+        st.info("No insights were generated for this dataset. "
+                "This may happen when the data is too sparse or the pipeline skipped the Insight Agent.")
+    else:
+        confirmed   = [i for i in insights if i.get("verdict") == "confirmed"]
+        refuted     = [i for i in insights if i.get("verdict") == "refuted"]
+        inconclusive = [i for i in insights if i.get("verdict") == "inconclusive"]
+
+        ia1, ia2, ia3 = st.columns(3)
+        ia1.markdown(f"""
+        <div class="stat-card" style="text-align:center">
+          <div class="stat-label">Confirmed</div>
+          <div class="stat-value" style="color:#4ade80">{len(confirmed)}</div>
+        </div>""", unsafe_allow_html=True)
+        ia2.markdown(f"""
+        <div class="stat-card" style="text-align:center">
+          <div class="stat-label">Refuted</div>
+          <div class="stat-value" style="color:#f87171">{len(refuted)}</div>
+        </div>""", unsafe_allow_html=True)
+        ia3.markdown(f"""
+        <div class="stat-card" style="text-align:center">
+          <div class="stat-label">Inconclusive</div>
+          <div class="stat-value" style="color:#facc15">{len(inconclusive)}</div>
+        </div>""", unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        _verdict_color  = {"confirmed": "#4ade80", "refuted": "#f87171", "inconclusive": "#facc15"}
+        _verdict_icon   = {"confirmed": "✓", "refuted": "✗", "inconclusive": "~"}
+
+        for idx, ins in enumerate(insights):
+            verdict  = ins.get("verdict", "inconclusive")
+            conf     = ins.get("confidence", 0.0)
+            color    = _verdict_color.get(verdict, "#94a3b8")
+            icon     = _verdict_icon.get(verdict, "?")
+            conf_bar = int(conf * 100)
+
+            st.markdown(f"""
+            <div class="stat-card" style="margin-bottom:14px;padding:18px 22px">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                <div style="font-weight:600;color:#e2e8f0;font-size:0.9rem;line-height:1.4;flex:1;padding-right:16px">
+                  {idx + 1}. {ins.get("hypothesis", "")}
+                </div>
+                <div style="text-align:right;min-width:100px">
+                  <div style="color:{color};font-weight:700;font-size:0.85rem">{icon} {verdict.upper()}</div>
+                  <div style="color:#475569;font-size:0.72rem;margin-top:2px">confidence {conf_bar}%</div>
+                </div>
+              </div>
+              <div style="background:#1e293b;border-radius:4px;height:4px;margin-bottom:12px">
+                <div style="background:{color};width:{conf_bar}%;height:4px;border-radius:4px"></div>
+              </div>
+              <div style="color:#cbd5e1;font-size:0.84rem;line-height:1.55;margin-bottom:8px">
+                {ins.get("finding", "")}
+              </div>
+              {f'<div style="color:#6366f1;font-size:0.78rem;font-family:monospace;background:#0f172a;padding:6px 10px;border-radius:6px;margin-top:6px">{ins["supporting_stat"]}</div>' if ins.get("supporting_stat") else ""}
+            </div>""", unsafe_allow_html=True)
+
+            with st.expander(f"View test code — insight {idx + 1}", expanded=False):
+                st.code(ins.get("test_code", ""), language="python")
+
+# ── TAB 7: Chat & Export ──────────────────────────────────────────────────────
+with tabs[6]:
     chat_col, export_col = st.columns([3, 1], gap="large")
 
     with chat_col:
@@ -659,7 +727,8 @@ with tabs[5]:
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("↺  New Analysis", use_container_width=True):
             for k in ["session_id","profile","cleaning","charts","stats",
-                      "time_series","narrative","errors","messages","df_preview"]:
+                      "time_series","narrative","quality_score","insights",
+                      "errors","messages","df_preview"]:
                 st.session_state.pop(k, None)
             st.rerun()
 
