@@ -93,7 +93,7 @@ def supervisor_node(state: AgentState) -> dict:
     iteration = state.get("iteration_count", 0) + 1
 
     # ── Safety circuit-breaker ────────────────────────────────────────────────
-    if iteration > 15:
+    if iteration > 20:
         return {"next_agent": "end", "iteration_count": iteration}
 
     # ── Fast-path: chat / export turn ─────────────────────────────────────────
@@ -106,6 +106,7 @@ def supervisor_node(state: AgentState) -> dict:
     profile_done   = state.get("profile_report") is not None
     stat_done      = len(state.get("stat_results", [])) > 0
     chart_done     = len(state.get("chart_specs", [])) > 0
+    insight_done   = len(state.get("insights", [])) > 0
     narrative_done = state.get("narrative_summary") is not None
 
     if not profile_done:
@@ -116,6 +117,9 @@ def supervisor_node(state: AgentState) -> dict:
 
     if not chart_done:
         return {"next_agent": "chart_agent", "iteration_count": iteration}
+
+    if not insight_done:
+        return {"next_agent": "insight_agent", "iteration_count": iteration}
 
     # ── Narrative: one LLM call, then done ───────────────────────────────────
     if not narrative_done:
@@ -133,8 +137,8 @@ def supervisor_node(state: AgentState) -> dict:
 
 def route_to_agent(state: AgentState) -> str:
     """Conditional edge: maps state.next_agent → node name."""
-    if state.get("analysis_complete") or state.get("iteration_count", 0) > 15:
+    if state.get("analysis_complete") or state.get("iteration_count", 0) > 20:
         return "end"
     agent = state.get("next_agent", "end")
-    valid = {"profile_agent", "stat_agent", "chart_agent", "chat_agent", "end"}
+    valid = {"profile_agent", "stat_agent", "chart_agent", "insight_agent", "chat_agent", "end"}
     return agent if agent in valid else "end"

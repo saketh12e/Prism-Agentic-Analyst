@@ -77,12 +77,25 @@ class ChartSpec:
     plotly_json: str                    # serialised Plotly figure (fig.to_json())
 
 
+# ── Typed outputs produced by the Insight Agent ─────────────────────────────
+
+@dataclass
+class DataInsight:
+    hypothesis: str                     # the question the agent posed
+    test_code: str                      # pandas code written to test it
+    finding: str                        # plain-English result of the test
+    verdict: str                        # "confirmed" | "refuted" | "inconclusive"
+    confidence: float                   # 0.0 – 1.0 agent self-assessment
+    supporting_stat: Optional[str]      # key numeric fact from the test result
+
+
 # ── Shared AgentState — the contract all agents read/write ──────────────────
 
 class AgentState(TypedDict):
     # ── Input ──────────────────────────────────────────────────────────────
     dataframe_path: str                 # absolute path to the uploaded raw CSV
     user_query: str                     # current user instruction / question
+    session_id: str                     # UUID assigned by the API on upload
 
     # ── Profile Agent outputs ──────────────────────────────────────────────
     profile_report: Optional[ProfileReport]
@@ -97,6 +110,9 @@ class AgentState(TypedDict):
 
     # ── Supervisor output ──────────────────────────────────────────────────
     narrative_summary: Optional[str]
+
+    # ── Insight Agent outputs ──────────────────────────────────────────────
+    insights: Annotated[list[DataInsight], operator.add]
 
     # ── Chat Agent (query + export) ────────────────────────────────────────
     chat_history: Annotated[list[dict], operator.add]   # {"role": str, "content": str}

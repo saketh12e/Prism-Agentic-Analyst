@@ -89,9 +89,9 @@ def detect_dtype_issues(df_path: str) -> dict:
     """
     df = pd.read_csv(df_path)
     issues: dict[str, str] = {}
-    for col in df.select_dtypes("object").columns:
+    for col in df.select_dtypes(include=["object", "string"]).columns:
         try:
-            pd.to_datetime(df[col], errors="raise")
+            pd.to_datetime(df[col], errors="raise", format="mixed")
             issues[col] = "likely_datetime"
             continue
         except Exception:
