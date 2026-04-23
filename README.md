@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🔮 PRISM
+# PRISM
 ### Agentic Data Intelligence
 
 **Upload a CSV. Five specialised AI agents analyse it end-to-end — profiling, cleaning, statistics, autonomous insights, visualisation, and natural-language chat — without a single line of user code.**
@@ -10,8 +10,6 @@
 [![Gemini](https://img.shields.io/badge/Gemini-Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.135-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.56-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io)
-[![Tests](https://img.shields.io/badge/Tests-86%20passing-4ade80?style=for-the-badge&logo=pytest&logoColor=white)](#testing)
-
 </div>
 
 ---
